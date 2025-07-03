@@ -8,20 +8,20 @@ function App() {
   const [skill, setSkill] = useState('');
 
   useEffect(() => {
-    fetchLaborers();
-  }, []);
+  fetchLaborers();
+}, []);
 
-  const fetchLaborers = async () => {
-    try {
-      const params = {};
-      if (city) params.city = city;
-      if (skill) params.skill = skill;
-      const res = await axios.get('https://workforceconnect--chaychowdhary.repl.co/laborers', { params });
-      setLaborers(res.data);
-    } catch (err) {
-      console.error('Error fetching laborers', err);
-    }
-  };
+const fetchLaborers = async () => {
+  try {
+    const params = {};
+    if (city) params.city = city;
+    if (skill) params.skill = skill;
+    const res = await axios.get('https://workforceconnect.chaychowdhary.repl.co/laborers', { params });
+    setLaborers(res.data);
+  } catch (err) {
+    console.error('Error fetching laborers', err);
+  }
+};
 
   return (
     <div style={{ padding: 20 }}>
