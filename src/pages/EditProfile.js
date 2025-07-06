@@ -55,7 +55,8 @@ const EditProfile = () => {
     if (!userId || !role) return;
 
     const ref = doc(db, role === "laborer" ? "laborers" : "contractors", userId);
-    await setDoc(ref, formData, { merge: true }); // <- Fix: merge or create
+
+    await setDoc(ref, { ...formData, uid: userId }, { merge: true });
 
     toast.success("✅ Profile updated!");
     navigate("/");
