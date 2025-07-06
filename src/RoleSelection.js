@@ -1,5 +1,3 @@
-// src/RoleSelection.js
-
 import React, { useState } from "react";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "./firebaseConfig";
@@ -30,7 +28,6 @@ const RoleSelection = ({ user }) => {
     }
 
     try {
-      // Save role to 'users' collection
       await setDoc(doc(db, "users", user.uid), { role }, { merge: true });
 
       if (role === "laborer") {
