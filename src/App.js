@@ -1,7 +1,7 @@
 // src/App.js
 
 import React, { useEffect, useState } from "react";
-import { BrowserRouter as Router, Routes, Route, Link, useLocation } from "react-router-dom";
+import { Routes, Route, Link, useLocation, useNavigate } from "react-router-dom";
 import { auth, db } from "./firebaseConfig";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
@@ -109,69 +109,67 @@ function App() {
   if (!role) return <RoleSelection user={user} />;
 
   return (
-    <Router>
-      <div className="min-h-screen flex flex-col">
-        <ToastContainer position="top-center" autoClose={3000} />
+    <div className="min-h-screen flex flex-col">
+      <ToastContainer position="top-center" autoClose={3000} />
 
-        {/* Sticky Header */}
-        <header className="sticky top-0 z-50 bg-white border-b p-4 shadow-sm flex justify-between items-center">
-          <h1 className="text-xl md:text-2xl font-bold text-blue-700">
-            Welcome {role === "contractor" ? "Contractor" : "Laborer"}
-          </h1>
+      {/* Sticky Header */}
+      <header className="sticky top-0 z-50 bg-white border-b p-4 shadow-sm flex justify-between items-center">
+        <h1 className="text-xl md:text-2xl font-bold text-blue-700">
+          Welcome {role === "contractor" ? "Contractor" : "Laborer"}
+        </h1>
 
-          <div className="flex items-center gap-4">
-            <Link to="/" className="text-blue-500 underline">Dashboard</Link>
+        <div className="flex items-center gap-4">
+          <Link to="/" className="text-blue-500 underline">Dashboard</Link>
 
-            {role === "contractor" && (
-              <>
-                <Link to="/hires" className="text-blue-500 underline">Hire Requests</Link>
-                <Link to="/sent-requests" className="text-blue-500 underline">Sent Requests</Link>
-              </>
-            )}
+          {role === "contractor" && (
+            <>
+              <Link to="/hires" className="text-blue-500 underline">Hire Requests</Link>
+              <Link to="/sent-requests" className="text-blue-500 underline">Sent Requests</Link>
+            </>
+          )}
 
-            {/* Dropdown Menu */}
-            <Menu as="div" className="relative inline-block text-left">
-              <Menu.Button className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300">
-                Menu ▾
-              </Menu.Button>
-              <Menu.Items className="absolute right-0 mt-2 w-40 origin-top-right bg-white border border-gray-300 divide-y divide-gray-100 rounded-md shadow-lg focus:outline-none z-50">
-                <div className="px-1 py-1">
-                  <Menu.Item>
-                    {({ active }) => (
-                      <Link
-                        to="/edit-profile"
-                        className={`${
-                          active ? "bg-blue-500 text-white" : "text-gray-900"
-                        } group flex w-full items-center rounded-md px-2 py-2 text-sm`}
-                      >
-                        Edit Profile
-                      </Link>
-                    )}
-                  </Menu.Item>
-                  <Menu.Item>
-                    {({ active }) => (
-                      <button
-                        onClick={handleLogout}
-                        className={`${
-                          active ? "bg-red-500 text-white" : "text-gray-900"
-                        } group flex w-full items-center rounded-md px-2 py-2 text-sm`}
-                      >
-                        Logout
-                      </button>
-                    )}
-                  </Menu.Item>
-                </div>
-              </Menu.Items>
-            </Menu>
-          </div>
-        </header>
+          {/* Dropdown Menu */}
+          <Menu as="div" className="relative inline-block text-left">
+            <Menu.Button className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300">
+              Menu ▾
+            </Menu.Button>
+            <Menu.Items className="absolute right-0 mt-2 w-40 origin-top-right bg-white border border-gray-300 divide-y divide-gray-100 rounded-md shadow-lg focus:outline-none z-50">
+              <div className="px-1 py-1">
+                <Menu.Item>
+                  {({ active }) => (
+                    <Link
+                      to="/edit-profile"
+                      className={`${
+                        active ? "bg-blue-500 text-white" : "text-gray-900"
+                      } group flex w-full items-center rounded-md px-2 py-2 text-sm`}
+                    >
+                      Edit Profile
+                    </Link>
+                  )}
+                </Menu.Item>
+                <Menu.Item>
+                  {({ active }) => (
+                    <button
+                      onClick={handleLogout}
+                      className={`${
+                        active ? "bg-red-500 text-white" : "text-gray-900"
+                      } group flex w-full items-center rounded-md px-2 py-2 text-sm`}
+                    >
+                      Logout
+                    </button>
+                  )}
+                </Menu.Item>
+              </div>
+            </Menu.Items>
+          </Menu>
+        </div>
+      </header>
 
-        {/* Animated Routes */}
-        <main className="flex-1 overflow-y-auto p-4">
-          <AnimatedRoutes role={role} user={user} />
-        </main>
-      </div>
-    </Router>
+      {/* Page Content */}
+      <main className="flex-1 overflow-y-auto p-4">
+        <AnimatedRoutes role={role} user={user} />
+      </main>
+    </div>
   );
 }
 
