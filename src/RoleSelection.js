@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "./firebaseConfig";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const RoleSelection = ({ user }) => {
   const [role, setRole] = useState("");
@@ -18,46 +19,48 @@ const RoleSelection = ({ user }) => {
   const navigate = useNavigate();
 
   const handleSubmit = async () => {
-    if (!role || !formData.name || !formData.city || (role === "laborer" && (!formData.skill || !formData.phone))) {
-      alert("Please fill in all required fields.");
+    if (!role || !formData.name || !formData.city) {
+      toast.error("Please fill in all required fields.");
+      return;
+    }
+
+    if (role === "laborer" && (!formData.skill || !formData.phone)) {
+      toast.error("Laborers must enter skill and phone number.");
       return;
     }
 
     try {
-      // Save to 'users' collection
-      await setDoc(doc(db, "users", user.uid), {
-        role: role
-      });
+      // Save role to 'users' collection
+      await setDoc(doc(db, "users", user.uid), { role }, { merge: true });
 
       if (role === "laborer") {
-        // Save to 'laborers' collection
         await setDoc(doc(db, "laborers", user.uid), {
+          uid: user.uid,
           name: formData.name,
           city: formData.city,
           skill: formData.skill,
-          phone: formData.phone,
-          uid: user.uid
-        });
+          phone: formData.phone
+        }, { merge: true });
       } else {
-        // Save to 'contractors' collection
         await setDoc(doc(db, "contractors", user.uid), {
+          uid: user.uid,
           name: formData.name,
           city: formData.city,
-          company: formData.company,
-          uid: user.uid
-        });
+          company: formData.company
+        }, { merge: true });
       }
 
+      toast.success("✅ Profile saved. Redirecting to dashboard...");
       navigate("/");
     } catch (error) {
       console.error("Error saving role:", error);
-      alert("Error saving role info.");
+      toast.error("❌ Failed to save profile.");
     }
   };
 
   return (
     <div className="p-6 max-w-md mx-auto">
-      <h2 className="text-2xl font-bold mb-4">Select Your Role</h2>
+      <h2 className="text-2xl font-bold mb-4 text-blue-700">Select Your Role</h2>
 
       <div className="space-y-4">
         <select
@@ -117,7 +120,7 @@ const RoleSelection = ({ user }) => {
 
         <button
           onClick={handleSubmit}
-          className="bg-blue-600 text-white px-4 py-2 rounded"
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
         >
           Submit
         </button>
