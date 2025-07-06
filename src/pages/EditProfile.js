@@ -1,7 +1,7 @@
 // src/pages/EditProfile.js
 
 import React, { useEffect, useState } from "react";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db, auth } from "../firebaseConfig";
 import { onAuthStateChanged } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
@@ -55,7 +55,7 @@ const EditProfile = () => {
     if (!userId || !role) return;
 
     const ref = doc(db, role === "laborer" ? "laborers" : "contractors", userId);
-    await updateDoc(ref, formData);
+    await setDoc(ref, formData, { merge: true }); // <- Fix: merge or create
 
     toast.success("✅ Profile updated!");
     navigate("/");
