@@ -1,3 +1,5 @@
+// src/RoleSelection.js
+
 import React, { useState } from "react";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "./firebaseConfig";
@@ -28,23 +30,33 @@ const RoleSelection = ({ user }) => {
     }
 
     try {
+      // Save role to users collection
       await setDoc(doc(db, "users", user.uid), { role }, { merge: true });
 
       if (role === "laborer") {
-        await setDoc(doc(db, "laborers", user.uid), {
-          uid: user.uid,
-          name: formData.name,
-          city: formData.city,
-          skill: formData.skill,
-          phone: formData.phone
-        }, { merge: true });
+        await setDoc(
+          doc(db, "laborers", user.uid),
+          {
+            uid: user.uid,
+            name: formData.name,
+            city: formData.city,
+            skill: formData.skill,
+            phone: formData.phone,
+            availability: true // ✅ required to appear in contractor dashboard
+          },
+          { merge: true }
+        );
       } else {
-        await setDoc(doc(db, "contractors", user.uid), {
-          uid: user.uid,
-          name: formData.name,
-          city: formData.city,
-          company: formData.company
-        }, { merge: true });
+        await setDoc(
+          doc(db, "contractors", user.uid),
+          {
+            uid: user.uid,
+            name: formData.name,
+            city: formData.city,
+            company: formData.company
+          },
+          { merge: true }
+        );
       }
 
       toast.success("✅ Profile saved. Redirecting to dashboard...");

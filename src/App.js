@@ -1,15 +1,15 @@
 // src/App.js
 
 import React, { useEffect, useState } from "react";
-import { Routes, Route, Link, useLocation, useNavigate } from "react-router-dom";
-import { auth, db } from "./firebaseConfig";
+import { Routes, Route, Link, useLocation } from "react-router-dom";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { getDoc, doc } from "firebase/firestore";
+import { AnimatePresence, motion } from "framer-motion";
 import { Menu } from "@headlessui/react";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { AnimatePresence, motion } from "framer-motion";
 
+import { auth, db } from "./firebaseConfig";
 import Landing from "./Landing";
 import Login from "./Login";
 import RoleSelection from "./RoleSelection";
@@ -48,7 +48,7 @@ const AnimatedRoutes = ({ role, user }) => {
               path="/hires"
               element={
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                  <HireRequests user={user} />
+                  <HireRequests />
                 </motion.div>
               }
             />
@@ -98,10 +98,15 @@ function App() {
     return () => unsubscribe();
   }, []);
 
-  const handleLogout = () => {
-    signOut(auth);
-    setUser(null);
-    setRole("");
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      setUser(null);
+      setRole("");
+    } catch (error) {
+      console.error("Logout failed:", error);
+      alert("Logout failed. Try again.");
+    }
   };
 
   if (loading) return <div className="text-center mt-10">Loading...</div>;
@@ -109,31 +114,36 @@ function App() {
   if (!role) return <RoleSelection user={user} />;
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-gray-50">
       <ToastContainer position="top-center" autoClose={3000} />
 
       {/* Sticky Header */}
-      <header className="sticky top-0 z-50 bg-white border-b p-4 shadow-sm flex justify-between items-center">
+      <header className="sticky top-0 z-50 bg-white border-b shadow-sm px-4 py-3 flex flex-col md:flex-row md:justify-between md:items-center">
         <h1 className="text-xl md:text-2xl font-bold text-blue-700">
           Welcome {role === "contractor" ? "Contractor" : "Laborer"}
         </h1>
 
-        <div className="flex items-center gap-4">
-          <Link to="/" className="text-blue-500 underline">Dashboard</Link>
+        <div className="mt-2 md:mt-0 flex flex-col md:flex-row items-start md:items-center text-sm text-gray-700 gap-2">
+          <Link to="/" className="text-blue-600 hover:underline">
+            Dashboard
+          </Link>
 
           {role === "contractor" && (
             <>
-              <Link to="/hires" className="text-blue-500 underline">Hire Requests</Link>
-              <Link to="/sent-requests" className="text-blue-500 underline">Sent Requests</Link>
+              <Link to="/hires" className="text-blue-600 hover:underline">
+                Hire Requests
+              </Link>
+              <Link to="/sent-requests" className="text-blue-600 hover:underline">
+                Sent Requests
+              </Link>
             </>
           )}
 
-          {/* Dropdown Menu */}
-          <Menu as="div" className="relative inline-block text-left">
-            <Menu.Button className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300">
+          <Menu as="div" className="relative">
+            <Menu.Button className="bg-gray-200 px-3 py-1 rounded hover:bg-gray-300">
               Menu ▾
             </Menu.Button>
-            <Menu.Items className="absolute right-0 mt-2 w-40 origin-top-right bg-white border border-gray-300 divide-y divide-gray-100 rounded-md shadow-lg focus:outline-none z-50">
+            <Menu.Items className="absolute right-0 mt-2 w-44 origin-top-right bg-white border rounded shadow-lg z-50">
               <div className="px-1 py-1">
                 <Menu.Item>
                   {({ active }) => (
@@ -141,7 +151,7 @@ function App() {
                       to="/edit-profile"
                       className={`${
                         active ? "bg-blue-500 text-white" : "text-gray-900"
-                      } group flex w-full items-center rounded-md px-2 py-2 text-sm`}
+                      } block px-4 py-2 text-sm rounded`}
                     >
                       Edit Profile
                     </Link>
@@ -153,7 +163,7 @@ function App() {
                       onClick={handleLogout}
                       className={`${
                         active ? "bg-red-500 text-white" : "text-gray-900"
-                      } group flex w-full items-center rounded-md px-2 py-2 text-sm`}
+                      } block px-4 py-2 text-sm w-full text-left rounded`}
                     >
                       Logout
                     </button>
@@ -165,7 +175,7 @@ function App() {
         </div>
       </header>
 
-      {/* Page Content */}
+      {/* Main Content */}
       <main className="flex-1 overflow-y-auto p-4">
         <AnimatedRoutes role={role} user={user} />
       </main>

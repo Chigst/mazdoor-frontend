@@ -1,5 +1,7 @@
+// src/getContractors.js
+
 import { collection, getDocs } from "firebase/firestore";
-import { db } from "./firebase";
+import { db } from "./firebaseConfig"; // ✅ Make sure this path is correct
 
 const getContractors = async () => {
   try {
@@ -8,10 +10,10 @@ const getContractors = async () => {
       id: doc.id,
       ...doc.data(),
     }));
-    console.log("Contractors fetched:", data); // ✅ Add this line
+    console.log("✅ Contractors fetched:", data);
     return data;
   } catch (error) {
-    console.error("Error fetching contractors:", error); // ✅ Add this
+    console.error("❌ Error fetching contractors:", error);
     return [];
   }
 };

@@ -14,6 +14,7 @@ const EditProfile = () => {
     name: "",
     city: "",
     skill: "",
+    phone: "",
     company: "",
   });
 
@@ -23,15 +24,18 @@ const EditProfile = () => {
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         setUserId(user.uid);
-
         const userDoc = await getDoc(doc(db, "users", user.uid));
+
         if (userDoc.exists()) {
           const userData = userDoc.data();
           setRole(userData.role);
 
-          const roleDoc = await getDoc(
-            doc(db, userData.role === "laborer" ? "laborers" : "contractors", user.uid)
+          const ref = doc(
+            db,
+            userData.role === "laborer" ? "laborers" : "contractors",
+            user.uid
           );
+          const roleDoc = await getDoc(ref);
 
           if (roleDoc.exists()) {
             const data = roleDoc.data();
@@ -39,6 +43,7 @@ const EditProfile = () => {
               name: data.name || "",
               city: data.city || "",
               skill: data.skill || "",
+              phone: data.phone || "",
               company: data.company || "",
             });
           }
@@ -54,12 +59,26 @@ const EditProfile = () => {
   const handleSave = async () => {
     if (!userId || !role) return;
 
+    if (!formData.name || !formData.city) {
+      toast.error("Name and city are required.");
+      return;
+    }
+
     const ref = doc(db, role === "laborer" ? "laborers" : "contractors", userId);
 
-    await setDoc(ref, { ...formData, uid: userId }, { merge: true });
+    const updatedData = {
+      ...formData,
+      uid: userId,
+    };
 
-    toast.success("✅ Profile updated!");
-    navigate("/");
+    try {
+      await setDoc(ref, updatedData, { merge: true });
+      toast.success("✅ Profile updated successfully!");
+      navigate("/");
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast.error("❌ Failed to update profile.");
+    }
   };
 
   return (
@@ -74,6 +93,7 @@ const EditProfile = () => {
           onChange={handleChange}
           className="w-full border p-2 rounded"
         />
+
         <input
           name="city"
           placeholder="City"
@@ -83,13 +103,22 @@ const EditProfile = () => {
         />
 
         {role === "laborer" && (
-          <input
-            name="skill"
-            placeholder="Skill"
-            value={formData.skill}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-          />
+          <>
+            <input
+              name="skill"
+              placeholder="Skill"
+              value={formData.skill}
+              onChange={handleChange}
+              className="w-full border p-2 rounded"
+            />
+            <input
+              name="phone"
+              placeholder="Phone Number"
+              value={formData.phone}
+              onChange={handleChange}
+              className="w-full border p-2 rounded"
+            />
+          </>
         )}
 
         {role === "contractor" && (
