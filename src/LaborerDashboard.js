@@ -1,5 +1,3 @@
-// src/LaborerDashboard.js
-
 import React, { useEffect, useState } from "react";
 import {
   collection,
@@ -41,29 +39,25 @@ const LaborerDashboard = () => {
     });
   }, []);
 
-  const fetchRequests = async (laborerId) => {
+  const fetchRequests = async (id) => {
     try {
       setLoading(true);
-      const hireQ = query(
-        collection(db, "hireRequests"),
-        where("laborerId", "==", laborerId)
-      );
-      const hireSnap = await getDocs(hireQ);
-      const hireData = hireSnap.docs.map((doc) => {
-        const data = doc.data();
+      const q = query(collection(db, "hireRequests"), where("laborerId", "==", id));
+      const snap = await getDocs(q);
+      const data = snap.docs.map((doc) => {
+        const d = doc.data();
         return {
           id: doc.id,
-          ...data,
-          timeAgo: data.timestamp?.toDate
-            ? formatDistanceToNow(data.timestamp.toDate(), { addSuffix: true })
+          ...d,
+          timeAgo: d.timestamp?.toDate
+            ? formatDistanceToNow(d.timestamp.toDate(), { addSuffix: true })
             : "Unknown time",
         };
       });
-
-      setRequests(hireData);
-      if (hireData.length === 0) toast.info("No hire requests yet.");
+      setRequests(data);
+      if (data.length === 0) toast.info("No job requests yet.");
     } catch (err) {
-      console.error("Failed to fetch requests", err);
+      console.error("Fetch error:", err);
       toast.error("Error loading requests.");
     } finally {
       setLoading(false);
@@ -75,70 +69,104 @@ const LaborerDashboard = () => {
       await updateDoc(doc(db, "hireRequests", id), { status });
       toast.success(`Request ${status}`);
       await fetchRequests(laborerId);
-    } catch (error) {
-      console.error("Error updating status:", error);
+    } catch (err) {
+      console.error("Status update failed:", err);
       toast.error("Failed to update request.");
     }
   };
 
   return (
-    <div className="p-4">
-      <h2 className="text-2xl font-bold text-green-700 mb-4">
-        Hire Requests
-      </h2>
+    <div className="min-h-screen bg-gray-50 p-6">
+      <header className="flex justify-between items-center border-b pb-4 mb-6">
+        <h1 className="text-2xl font-semibold text-gray-800">Mazdoor</h1>
+        <button
+          onClick={() => auth.signOut()}
+          className="text-sm text-gray-600 hover:underline"
+        >
+          Logout
+        </button>
+      </header>
 
-      {loading ? (
-        <p className="text-gray-500">Loading...</p>
-      ) : requests.length === 0 ? (
-        <p className="text-gray-600">No hire requests available.</p>
-      ) : (
-        <div className="grid gap-4">
-          {requests.map((req) => (
-            <div
-              key={req.id}
-              className="border border-gray-200 rounded-lg shadow-sm p-4 bg-white"
-            >
-              <p className="text-lg font-semibold text-blue-800">
-                From: {req.contractorName}
-              </p>
-              <p className="text-sm text-gray-500 mb-2">
-                Sent {req.timeAgo}
-              </p>
-              <div className="mb-2">
-                Status:{" "}
-                <span
-                  className={`font-bold text-sm px-2 py-1 rounded ${
-                    req.status === "pending"
-                      ? "bg-yellow-200 text-yellow-800"
-                      : req.status === "accepted"
-                      ? "bg-green-200 text-green-800"
-                      : "bg-red-200 text-red-800"
-                  }`}
-                >
-                  {req.status}
-                </span>
-              </div>
+      <div className="max-w-3xl mx-auto">
+        <h2 className="text-xl font-bold mb-4 text-gray-800">Your Job Requests</h2>
 
-              {req.status === "pending" && (
-                <div className="flex gap-3 mt-3">
-                  <button
-                    onClick={() => handleAction(req.id, "accepted")}
-                    className="bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700"
+        {loading ? (
+          <p className="text-gray-500">Loading...</p>
+        ) : requests.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-500">No job requests yet. Your profile is ready for work!</p>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {requests.map((req) => (
+              <div
+                key={req.id}
+                className={`rounded-xl border border-gray-200 p-5 shadow-sm bg-white ${
+                  req.status !== "pending" ? "opacity-70" : ""
+                }`}
+              >
+                <div className="flex justify-between items-center mb-2">
+                  <div>
+                    <p className="text-lg font-medium text-gray-900">{req.contractorName}</p>
+                    <p className="text-sm text-gray-500">{req.contractorCompany || req.jobLocation}</p>
+                  </div>
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      req.status === "pending"
+                        ? "bg-yellow-100 text-yellow-800"
+                        : req.status === "accepted"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-red-100 text-red-700"
+                    }`}
                   >
-                    Accept
-                  </button>
-                  <button
-                    onClick={() => handleAction(req.id, "rejected")}
-                    className="bg-red-600 text-white px-4 py-1 rounded hover:bg-red-700"
-                  >
-                    Reject
-                  </button>
+                    {req.status}
+                  </span>
                 </div>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
+
+                <div className="text-sm text-gray-600 space-y-1 mb-3">
+                  <p>
+                    <strong>Start:</strong>{" "}
+                    {req.startDate
+                      ? new Date(req.startDate).toLocaleDateString()
+                      : "N/A"}
+                  </p>
+                  {req.pay && (
+                    <p>
+                      <strong>Pay:</strong> {req.pay}
+                    </p>
+                  )}
+                  <p>
+                    <strong>Time:</strong> {req.timeAgo}
+                  </p>
+                </div>
+
+                {req.jobDescription && (
+                  <p className="text-gray-700 text-sm bg-gray-100 rounded p-3 mb-3">
+                    {req.jobDescription}
+                  </p>
+                )}
+
+                {req.status === "pending" && (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleAction(req.id, "accepted")}
+                      className="flex-1 bg-green-600 text-white py-2 rounded hover:bg-green-700 transition"
+                    >
+                      Accept
+                    </button>
+                    <button
+                      onClick={() => handleAction(req.id, "rejected")}
+                      className="flex-1 bg-red-600 text-white py-2 rounded hover:bg-red-700 transition"
+                    >
+                      Reject
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

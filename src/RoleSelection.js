@@ -1,10 +1,11 @@
-// src/RoleSelection.js
+// src/components/RoleSelection.js
 
 import React, { useState } from "react";
-import { doc, setDoc } from "firebase/firestore";
-import { db } from "./firebaseConfig";
 import { useNavigate } from "react-router-dom";
+import { doc, setDoc } from "firebase/firestore";
 import { toast } from "react-toastify";
+import { Briefcase, HardHat } from "lucide-react";
+import { db, auth } from "./firebaseConfig";
 
 const RoleSelection = ({ user }) => {
   const [role, setRole] = useState("");
@@ -30,7 +31,6 @@ const RoleSelection = ({ user }) => {
     }
 
     try {
-      // Save role to users collection
       await setDoc(doc(db, "users", user.uid), { role }, { merge: true });
 
       if (role === "laborer") {
@@ -42,7 +42,7 @@ const RoleSelection = ({ user }) => {
             city: formData.city,
             skill: formData.skill,
             phone: formData.phone,
-            availability: true // ✅ required to appear in contractor dashboard
+            availability: true
           },
           { merge: true }
         );
@@ -68,71 +68,101 @@ const RoleSelection = ({ user }) => {
   };
 
   return (
-    <div className="p-6 max-w-md mx-auto">
-      <h2 className="text-2xl font-bold mb-4 text-blue-700">Select Your Role</h2>
+    <div className="min-h-screen bg-background flex items-center justify-center p-6">
+      <div className="w-full max-w-md space-y-8">
+        <div className="text-center space-y-2">
+          <h1 className="text-3xl font-bold text-foreground">Welcome to Mazdoor</h1>
+          <p className="text-muted-foreground">We're almost there. Tell us who you are.</p>
+        </div>
 
-      <div className="space-y-4">
-        <select
-          value={role}
-          onChange={(e) => setRole(e.target.value)}
-          className="w-full border p-2 rounded"
-        >
-          <option value="">Choose role</option>
-          <option value="laborer">Laborer</option>
-          <option value="contractor">Contractor</option>
-        </select>
+        <div className="space-y-4">
+          <div
+            onClick={() => setRole("contractor")}
+            className={`p-5 rounded-xl border-2 cursor-pointer transition-all ${
+              role === "contractor" ? "border-blue-600 shadow-md" : "border-gray-200 hover:border-blue-400"
+            }`}
+          >
+            <div className="flex items-center space-x-4">
+              <div className="p-3 bg-blue-100 rounded-full">
+                <Briefcase className="text-blue-600 w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold">I'm a Contractor</h3>
+                <p className="text-sm text-gray-500">I need to hire skilled laborers for my projects</p>
+              </div>
+            </div>
+          </div>
 
-        <input
-          name="name"
-          placeholder="Your Name"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          className="w-full border p-2 rounded"
-        />
+          <div
+            onClick={() => setRole("laborer")}
+            className={`p-5 rounded-xl border-2 cursor-pointer transition-all ${
+              role === "laborer" ? "border-blue-600 shadow-md" : "border-gray-200 hover:border-blue-400"
+            }`}
+          >
+            <div className="flex items-center space-x-4">
+              <div className="p-3 bg-blue-100 rounded-full">
+                <HardHat className="text-blue-600 w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold">I'm a Laborer</h3>
+                <p className="text-sm text-gray-500">I'm looking for daily work opportunities</p>
+              </div>
+            </div>
+          </div>
 
-        <input
-          name="city"
-          placeholder="City"
-          value={formData.city}
-          onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-          className="w-full border p-2 rounded"
-        />
-
-        {role === "laborer" && (
-          <>
-            <input
-              name="skill"
-              placeholder="Skill"
-              value={formData.skill}
-              onChange={(e) => setFormData({ ...formData, skill: e.target.value })}
-              className="w-full border p-2 rounded"
-            />
-            <input
-              name="phone"
-              placeholder="Phone Number"
-              value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              className="w-full border p-2 rounded"
-            />
-          </>
-        )}
-
-        {role === "contractor" && (
           <input
-            name="company"
-            placeholder="Company Name"
-            value={formData.company}
-            onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-            className="w-full border p-2 rounded"
+            type="text"
+            placeholder="Your Name"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            className="w-full border rounded px-4 py-2"
           />
-        )}
 
-        <button
-          onClick={handleSubmit}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          Submit
-        </button>
+          <input
+            type="text"
+            placeholder="City"
+            value={formData.city}
+            onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+            className="w-full border rounded px-4 py-2"
+          />
+
+          {role === "laborer" && (
+            <>
+              <input
+                type="text"
+                placeholder="Skill"
+                value={formData.skill}
+                onChange={(e) => setFormData({ ...formData, skill: e.target.value })}
+                className="w-full border rounded px-4 py-2"
+              />
+
+              <input
+                type="text"
+                placeholder="Phone Number"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                className="w-full border rounded px-4 py-2"
+              />
+            </>
+          )}
+
+          {role === "contractor" && (
+            <input
+              type="text"
+              placeholder="Company Name"
+              value={formData.company}
+              onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+              className="w-full border rounded px-4 py-2"
+            />
+          )}
+
+          <button
+            onClick={handleSubmit}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded"
+          >
+            Submit
+          </button>
+        </div>
       </div>
     </div>
   );
